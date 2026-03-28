@@ -123,6 +123,8 @@ Motivo:
 
 Banco de Dados: 
 
+## Diagrama de fluxo
+
 ```mermaid
 flowchart LR
 
@@ -133,8 +135,8 @@ flowchart LR
     end
 
     subgraph FRONTEND [Interface]
-        WebApp[Web App React]
-        Mobile[Mobile App]
+        WebApp[Web App]
+        Mobile[Mobile]
     end
 
     subgraph BACKEND [API Backend]
