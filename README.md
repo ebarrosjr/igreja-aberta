@@ -123,6 +123,7 @@ Motivo:
 
 Banco de Dados: 
 
+```mermaid
 flowchart LR
 
     subgraph USUARIOS [Usuários]
@@ -173,3 +174,4 @@ flowchart LR
     Ass --> Msg
     Rel --> Cloud
     Adm --> Cloud
+```
