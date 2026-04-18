@@ -85,7 +85,8 @@ igreja-aberta/
 │   ├── mysql/
 │   ├── oracle/
 │   ├── postgresql/
-│   └── sqlserver/
+│   ├── sqlserver/
+│   └── sqlite/
 │
 ├── frontend/
 │   ├── angular/
@@ -94,11 +95,6 @@ igreja-aberta/
 │   └── next/
 │
 ├── docs/
-│   ├── arquitetura/
-│   ├── dominio/
-│   ├── diagramas/
-│   ├── requisitos/
-│   └── roadmap/
 │
 ├── .gitignore
 └── README.md
