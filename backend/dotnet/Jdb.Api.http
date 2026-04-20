@@ -1,0 +1,6 @@
+@Jdb.Api_HostAddress = http://localhost:5265
+
+GET {{Jdb.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,21 @@
+# .NET local/sensitive configuration
+appsettings.*.json
+!appsettings.Example.json
+!appsettings.example.json
+Properties/launchSettings.json
+*.Development.http
+*.Local.http
+*.local.http
+http-client.env.json
+http-client.private.env.json
+secrets.json
+
+# .NET build output
+bin/
+obj/
+TestResults/
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
