@@ -1,0 +1,81 @@
+@@include('partials/header.html')
+<body>
+    @@include('partials/menu.html')
+    <main>
+        <div class="container">
+            <h2 class="mb-2">
+                Adicionar novo membro
+            </h2>
+            <form action="#" method="post">
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="cpf">CPF</label>
+                        <input type="text" name="cpf" id="cpf" />
+                    </div>
+                    <div class="col-md-10">
+                        <label for="nome">Nome</label>
+                        <input type="text" name="nome" id="nome" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="tipo">Tipo</label>
+                        <select name="tipo" id="tipo" disabled aria-readonly="true">
+                            <option value=""> - Selecione - </option>
+                            <option value="P">Pastor</option>
+                            <option value="M" selected>Membro</option>
+                            <option value="C">Conselheiro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="data_nascimento">Data de nascimento</label>
+                        <input type="date" name="data_nascimento" id="data_nascimento" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="email">E-mail</label>
+                        <input type="email" name="email" id="email" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="whatsapp">WhatsApp</label>
+                        <input type="tel" name="whatsapp" id="whatsapp" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="sexo-label">Sexo:</label>
+                        
+                        <div class="sexo-opcoes">
+                            <label>
+                            <input type="radio" name="sexo" value="M" /> Masculino
+                            </label>
+                            <label>
+                            <input type="radio" name="sexo" value="F" /> Feminino
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="CEP">CEP</label>
+                        <input type="text" name="CEP" id="CEP" />
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" name="endereco" id="endereco" />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="numero">Número</label>
+                        <input type="text" name="numero" id="numero" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="complemento">Complemento</label>
+                        <input type="text" name="complemento" id="complemento" />
+                    </div>
+                </div>
+                <button type="submit" class="bt-success mt-3"> Gravar </button>
+                <a href="#" class="bt-error mt-3"> Voltar </a>
+            </form>
+        </div>
+    </main>
+    <script src="/assets/js/main.min.js"></script>
+</body>
+
+</html>

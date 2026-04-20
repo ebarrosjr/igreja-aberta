@@ -1,0 +1,27 @@
+document.querySelector(".sidebar-toggler").addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.toggle("collapsed");
+});
+
+document.querySelectorAll(".submenu-toggle").forEach((toggle) => {
+    toggle.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        const parentItem = toggle.closest(".has-children");
+        const willOpen = !parentItem.classList.contains("is-open");
+
+        document.querySelectorAll(".has-children.is-open").forEach((item) => {
+            if (item !== parentItem) {
+                item.classList.remove("is-open");
+
+                const itemToggle = item.querySelector(".submenu-toggle");
+                if (itemToggle) {
+                    itemToggle.setAttribute("aria-expanded", "false");
+                }
+            }
+        });
+
+        const isOpen = parentItem.classList.toggle("is-open");
+
+        toggle.setAttribute("aria-expanded", String(willOpen && isOpen));
+    });
+});

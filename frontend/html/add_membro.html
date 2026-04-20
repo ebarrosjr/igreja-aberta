@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Igreja Aberta - HTML Vanilla</title>
+    <link rel="stylesheet" href="/assets/css/style.min.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <header>
+            <a href="/" class="logo-header">
+                <figure>
+                    <img src="/img/logo.webp" alt="IgAber" />
+                </figure>
+            </a>
+            <button class="sidebar-toggler"><span><i class="las la-chevron-left"></i></span></button>
+        </header>
+        <nav class="side-nav">
+            <ul>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-sitemap"></i>
+                        <span class="label">Dashboard</span>
+                    </a>
+                </li>
+                <li class="has-children">
+                    <a href="#" class="nav-link submenu-toggle" aria-expanded="false">
+                        <i class="las la-user"></i>
+                        <span class="label">Pessoas</span>
+                    </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="membros.html" class="nav-link">
+                                <span class="label">Membros</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Visitantes</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Acompanhamento </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-church"></i>
+                        <span class="label">Ministérios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-calendar"></i>                        
+                        <span class="label">Agenda pastoral</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-hand-holding-heart"></i>
+                        <span class="label">Eventos</span>
+                    </a>
+                </li>
+                <li class="has-children">
+                    <a href="#" class="nav-link submenu-toggle" aria-expanded="false">
+                        <i class="las la-comments-dollar"></i>
+                        <span class="label">Controle financeiro</span>
+                    </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Contas a pagar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Dízimos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Ofertas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link">
+                                <span class="label">Doações</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-comments"></i>
+                        <span class="label">Comunicação interna</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-file-alt"></i>
+                        <span class="label">Relatórios</span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="sub-menu">
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-question-circle"></i>
+                        <span class="label">Suporte</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="las la-power-off"></i>
+                        <span class="label">Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <main>
+        <div class="container">
+            <h2 class="mb-2">
+                Adicionar novo membro
+            </h2>
+            <form action="#" method="post">
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="cpf">CPF</label>
+                        <input type="text" name="cpf" id="cpf" />
+                    </div>
+                    <div class="col-md-10">
+                        <label for="nome">Nome</label>
+                        <input type="text" name="nome" id="nome" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="tipo">Tipo</label>
+                        <select name="tipo" id="tipo" disabled aria-readonly="true">
+                            <option value=""> - Selecione - </option>
+                            <option value="P">Pastor</option>
+                            <option value="M" selected>Membro</option>
+                            <option value="C">Conselheiro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="data_nascimento">Data de nascimento</label>
+                        <input type="date" name="data_nascimento" id="data_nascimento" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="email">E-mail</label>
+                        <input type="email" name="email" id="email" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="whatsapp">WhatsApp</label>
+                        <input type="tel" name="whatsapp" id="whatsapp" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="sexo-label">Sexo:</label>
+                        
+                        <div class="sexo-opcoes">
+                            <label>
+                            <input type="radio" name="sexo" value="M" /> Masculino
+                            </label>
+                            <label>
+                            <input type="radio" name="sexo" value="F" /> Feminino
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="CEP">CEP</label>
+                        <input type="text" name="CEP" id="CEP" />
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" name="endereco" id="endereco" />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="numero">Número</label>
+                        <input type="text" name="numero" id="numero" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="complemento">Complemento</label>
+                        <input type="text" name="complemento" id="complemento" />
+                    </div>
+                </div>
+                <button type="submit" class="bt-success mt-3"> Gravar </button>
+                <a href="#" class="bt-error mt-3"> Voltar </a>
+            </form>
+        </div>
+    </main>
+    <script src="/assets/js/main.min.js"></script>
+</body>
+
+</html>
