@@ -1,5 +1,6 @@
 using Jdb.Api.Controllers;
 using Jdb.Api.Data;
+using Jdb.Api.DTOs;
 using Jdb.Api.DTOs.Users;
 using Jdb.Api.Models;
 using Jdb.Api.Services;
@@ -25,10 +26,12 @@ namespace Jdb.Api.Tests.Controllers
             await SeedUserAsync(context, passwordHasher, congregation.Id);
             UsersController controller = CreateController(context, passwordHasher);
 
-            ActionResult<IEnumerable<UserResponse>> result = await controller.GetAll();
+            ActionResult<ApiResponse<IEnumerable<UserResponse>>> result = await controller.GetAll();
 
-            var ok = Assert.IsType<OkObjectResult>(result.Result);
-            var users = Assert.IsAssignableFrom<IEnumerable<UserResponse>>(ok.Value);
+            var ok = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(200, ok.StatusCode);
+            var envelope = Assert.IsType<ApiResponse<IEnumerable<UserResponse>>>(ok.Value);
+            var users = Assert.IsAssignableFrom<IEnumerable<UserResponse>>(envelope.Data);
             Assert.Single(users);
         }
 
@@ -41,10 +44,12 @@ namespace Jdb.Api.Tests.Controllers
             User user = await SeedUserAsync(context, passwordHasher, congregation.Id);
             UsersController controller = CreateController(context, passwordHasher);
 
-            ActionResult<UserResponse> result = await controller.Get(user.Id);
+            ActionResult<ApiResponse<UserResponse>> result = await controller.Get(user.Id);
 
-            var ok = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<UserResponse>(ok.Value);
+            var ok = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(200, ok.StatusCode);
+            var envelope = Assert.IsType<ApiResponse<UserResponse>>(ok.Value);
+            UserResponse response = Assert.IsType<UserResponse>(envelope.Data);
             Assert.Equal(user.Email, response.Email);
         }
 
@@ -56,7 +61,7 @@ namespace Jdb.Api.Tests.Controllers
             Congregation congregation = await SeedCongregationAsync(context);
             UsersController controller = CreateController(context, passwordHasher);
 
-            ActionResult<UserResponse> result = await controller.Create(new CreateUserRequest
+            ActionResult<ApiResponse<UserResponse>> result = await controller.Create(new CreateUserRequest
             {
                 CongregationId = congregation.Id,
                 Name = "Novo Usuario",
@@ -65,8 +70,10 @@ namespace Jdb.Api.Tests.Controllers
                 Status = "active"
             });
 
-            var created = Assert.IsType<CreatedAtActionResult>(result.Result);
-            var response = Assert.IsType<UserResponse>(created.Value);
+            var created = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(201, created.StatusCode);
+            var envelope = Assert.IsType<ApiResponse<UserResponse>>(created.Value);
+            UserResponse response = Assert.IsType<UserResponse>(envelope.Data);
             Assert.Equal("novo@example.com", response.Email);
             User storedUser = await context.Users.SingleAsync(u => u.Email == "novo@example.com");
             Assert.True(passwordHasher.Verify("Password123", storedUser.Password));
@@ -82,7 +89,7 @@ namespace Jdb.Api.Tests.Controllers
             string originalPasswordHash = user.Password;
             UsersController controller = CreateController(context, passwordHasher);
 
-            ActionResult<UserResponse> result = await controller.Update(user.Id, new UpdateUserRequest
+            ActionResult<ApiResponse<UserResponse>> result = await controller.Update(user.Id, new UpdateUserRequest
             {
                 CongregationId = congregation.Id,
                 Name = "Usuario Atualizado",
@@ -90,8 +97,10 @@ namespace Jdb.Api.Tests.Controllers
                 Status = "active"
             });
 
-            var ok = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<UserResponse>(ok.Value);
+            var ok = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(200, ok.StatusCode);
+            var envelope = Assert.IsType<ApiResponse<UserResponse>>(ok.Value);
+            UserResponse response = Assert.IsType<UserResponse>(envelope.Data);
             Assert.Equal("Usuario Atualizado", response.Name);
             User storedUser = await context.Users.SingleAsync(u => u.Id == user.Id);
             Assert.Equal(originalPasswordHash, storedUser.Password);
@@ -106,9 +115,12 @@ namespace Jdb.Api.Tests.Controllers
             User user = await SeedUserAsync(context, passwordHasher, congregation.Id);
             UsersController controller = CreateController(context, passwordHasher);
 
-            IActionResult result = await controller.Delete(user.Id);
+            ActionResult<ApiResponse<object>> result = await controller.Delete(user.Id);
 
-            Assert.IsType<NoContentResult>(result);
+            var ok = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(200, ok.StatusCode);
+            var envelope = Assert.IsType<ApiResponse<object>>(ok.Value);
+            Assert.Null(envelope.Data);
             User storedUser = await context.Users.SingleAsync(u => u.Id == user.Id);
             Assert.Equal("inactive", storedUser.Status);
         }

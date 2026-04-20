@@ -1,4 +1,5 @@
 using Jdb.Api.Data;
+using Jdb.Api.DTOs;
 using Jdb.Api.DTOs.Users;
 using Jdb.Api.Models;
 using Jdb.Api.Services;
@@ -11,7 +12,7 @@ namespace Jdb.Api.Controllers
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public class UsersController : ApiControllerBase
     {
         private readonly JdbContext _context;
         private readonly IPasswordHasher _passwordHasher;
@@ -23,7 +24,7 @@ namespace Jdb.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserResponse>>> GetAll()
+        public async Task<ActionResult<ApiResponse<IEnumerable<UserResponse>>>> GetAll()
         {
             List<UserResponse> users = await _context.Users
                 .AsNoTracking()
@@ -41,34 +42,34 @@ namespace Jdb.Api.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(users);
+            return ApiOk<IEnumerable<UserResponse>>(users, "Usuarios listados com sucesso.");
         }
 
         [HttpGet("{id:long}")]
-        public async Task<ActionResult<UserResponse>> Get(long id)
+        public async Task<ActionResult<ApiResponse<UserResponse>>> Get(long id)
         {
             User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
             if (user is null)
             {
-                return NotFound(new { message = "Usuario nao encontrado." });
+                return ApiNotFound<UserResponse>("Usuario nao encontrado.");
             }
 
-            return Ok(ToResponse(user));
+            return ApiOk(ToResponse(user), "Usuario encontrado com sucesso.");
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserResponse>> Create(CreateUserRequest request)
+        public async Task<ActionResult<ApiResponse<UserResponse>>> Create(CreateUserRequest request)
         {
             string email = request.Email.Trim().ToLowerInvariant();
 
             if (!await _context.Congregations.AnyAsync(c => c.Id == request.CongregationId))
             {
-                return BadRequest(new { message = "Congregacao informada nao existe." });
+                return ApiBadRequest<UserResponse>("Congregacao informada nao existe.");
             }
 
             if (await _context.Users.AnyAsync(u => u.Email == email))
             {
-                return Conflict(new { message = "E-mail ja cadastrado." });
+                return ApiConflict<UserResponse>("E-mail ja cadastrado.");
             }
 
             DateTime now = DateTime.UtcNow;
@@ -86,27 +87,27 @@ namespace Jdb.Api.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Get), new { id = user.Id }, ToResponse(user));
+            return ApiCreated(ToResponse(user), "Usuario criado com sucesso.");
         }
 
         [HttpPut("{id:long}")]
-        public async Task<ActionResult<UserResponse>> Update(long id, UpdateUserRequest request)
+        public async Task<ActionResult<ApiResponse<UserResponse>>> Update(long id, UpdateUserRequest request)
         {
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user is null)
             {
-                return NotFound(new { message = "Usuario nao encontrado." });
+                return ApiNotFound<UserResponse>("Usuario nao encontrado.");
             }
 
             string email = request.Email.Trim().ToLowerInvariant();
             if (!await _context.Congregations.AnyAsync(c => c.Id == request.CongregationId))
             {
-                return BadRequest(new { message = "Congregacao informada nao existe." });
+                return ApiBadRequest<UserResponse>("Congregacao informada nao existe.");
             }
 
             if (await _context.Users.AnyAsync(u => u.Id != id && u.Email == email))
             {
-                return Conflict(new { message = "E-mail ja cadastrado." });
+                return ApiConflict<UserResponse>("E-mail ja cadastrado.");
             }
 
             user.CongregationId = request.CongregationId;
@@ -122,23 +123,23 @@ namespace Jdb.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(ToResponse(user));
+            return ApiOk(ToResponse(user), "Usuario atualizado com sucesso.");
         }
 
         [HttpDelete("{id:long}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<ActionResult<ApiResponse<object>>> Delete(long id)
         {
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user is null)
             {
-                return NotFound(new { message = "Usuario nao encontrado." });
+                return ApiNotFound<object>("Usuario nao encontrado.");
             }
 
             user.Status = "inactive";
             user.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return ApiOk<object>(null, "Usuario desativado com sucesso.");
         }
 
         private static UserResponse ToResponse(User user)

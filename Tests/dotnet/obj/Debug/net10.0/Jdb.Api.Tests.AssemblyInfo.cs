@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Jdb.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d19702ba8a18c2cff3be6a25dc969dff8e83584")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39e27d9a97a118600e04f43ca96cdd62091e0a8c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Jdb.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Jdb.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

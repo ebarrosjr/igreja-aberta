@@ -1,4 +1,5 @@
 using Jdb.Api.Data;
+using Jdb.Api.DTOs;
 using Jdb.Api.DTOs.Auth;
 using Jdb.Api.Models;
 using Jdb.Api.Services;
@@ -9,7 +10,7 @@ namespace Jdb.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly JdbContext _context;
         private readonly IPasswordHasher _passwordHasher;
@@ -29,14 +30,14 @@ namespace Jdb.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+        public async Task<ActionResult<ApiResponse<AuthResponse>>> Login(LoginRequest request)
         {
             string email = request.Email.Trim().ToLowerInvariant();
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user is null || user.Status != "active" || !_passwordHasher.Verify(request.Password, user.Password))
             {
-                return Unauthorized(new { message = "Credenciais invalidas." });
+                return ApiUnauthorized<AuthResponse>("Credenciais invalidas.");
             }
 
             AuthResponse response = _tokenService.CreateAuthResponse(user);
@@ -54,11 +55,11 @@ namespace Jdb.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(response);
+            return ApiOk(response, "Login realizado com sucesso.");
         }
 
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<AuthResponse>> RefreshToken(RefreshTokenRequest request)
+        public async Task<ActionResult<ApiResponse<AuthResponse>>> RefreshToken(RefreshTokenRequest request)
         {
             string tokenHash = _tokenService.HashToken(request.RefreshToken);
             RefreshToken? currentRefreshToken = await _context.RefreshTokens
@@ -71,7 +72,7 @@ namespace Jdb.Api.Controllers
                 || currentRefreshToken.RevokedAt is not null
                 || currentRefreshToken.ExpiresAt <= DateTime.UtcNow)
             {
-                return Unauthorized(new { message = "Refresh token invalido." });
+                return ApiUnauthorized<AuthResponse>("Refresh token invalido.");
             }
 
             AuthResponse response = _tokenService.CreateAuthResponse(currentRefreshToken.User);
@@ -88,18 +89,18 @@ namespace Jdb.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(response);
+            return ApiOk(response, "Token atualizado com sucesso.");
         }
 
         [HttpPost("forgot-password")]
-        public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword(ForgotPasswordRequest request)
+        public async Task<ActionResult<ApiResponse<ForgotPasswordResponse>>> ForgotPassword(ForgotPasswordRequest request)
         {
             string email = request.Email.Trim().ToLowerInvariant();
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Status == "active");
 
             if (user is null)
             {
-                return Accepted(new ForgotPasswordResponse());
+                return ApiAccepted(new ForgotPasswordResponse(), "Se o e-mail existir, as instrucoes de redefinicao serao enviadas.");
             }
 
             string resetToken = _tokenService.GenerateOpaqueToken();
@@ -115,15 +116,15 @@ namespace Jdb.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Accepted(new ForgotPasswordResponse
+            return ApiAccepted(new ForgotPasswordResponse
             {
                 ResetToken = _environment.IsDevelopment() ? resetToken : null,
                 ExpiresAt = _environment.IsDevelopment() ? expiresAt : null
-            });
+            }, "Se o e-mail existir, as instrucoes de redefinicao serao enviadas.");
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        public async Task<ActionResult<ApiResponse<object>>> ResetPassword(ResetPasswordRequest request)
         {
             string tokenHash = _tokenService.HashToken(request.Token);
             PasswordResetToken? resetToken = await _context.PasswordResetTokens
@@ -135,7 +136,7 @@ namespace Jdb.Api.Controllers
                 || resetToken.UsedAt is not null
                 || resetToken.ExpiresAt <= DateTime.UtcNow)
             {
-                return BadRequest(new { message = "Token de redefinicao invalido ou expirado." });
+                return ApiBadRequest<object>("Token de redefinicao invalido ou expirado.");
             }
 
             DateTime now = DateTime.UtcNow;
@@ -154,7 +155,7 @@ namespace Jdb.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Senha redefinida com sucesso." });
+            return ApiOk<object>(null, "Senha redefinida com sucesso.");
         }
     }
 }
