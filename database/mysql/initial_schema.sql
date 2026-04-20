@@ -50,6 +50,30 @@ CREATE TABLE users (
     CONSTRAINT fk_users_congregation FOREIGN KEY (congregation_id) REFERENCES congregations (id)
 );
 
+CREATE TABLE refresh_tokens (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    token_hash VARCHAR(128) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_refresh_tokens PRIMARY KEY (id),
+    CONSTRAINT uq_refresh_tokens_token_hash UNIQUE (token_hash),
+    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE password_reset_tokens (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    token_hash VARCHAR(128) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_password_reset_tokens PRIMARY KEY (id),
+    CONSTRAINT uq_password_reset_tokens_token_hash UNIQUE (token_hash),
+    CONSTRAINT fk_password_reset_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
 CREATE TABLE user_roles (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
@@ -228,6 +252,9 @@ CREATE TABLE financial_entries (
 );
 
 CREATE INDEX idx_users_congregation_id ON users (congregation_id);
+CREATE UNIQUE INDEX idx_users_email ON users (email);
+CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens (user_id);
+CREATE INDEX idx_password_reset_tokens_user_id ON password_reset_tokens (user_id);
 CREATE INDEX idx_user_roles_user_id ON user_roles (user_id);
 CREATE INDEX idx_user_roles_role_id ON user_roles (role_id);
 CREATE INDEX idx_role_permissions_role_id ON role_permissions (role_id);
