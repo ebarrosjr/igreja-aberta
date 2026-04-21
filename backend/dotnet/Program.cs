@@ -16,7 +16,7 @@ builder.Services.AddDbContext<JdbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 36))));
 
-builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
