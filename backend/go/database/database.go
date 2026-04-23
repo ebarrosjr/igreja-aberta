@@ -78,6 +78,6 @@ func SeedInitialData() error {
 		return err
 	}
 
-	_, err = CreateUser(congregation.Id, "Administrador", adminEmail, hashedPassword)
+	_, err = CreateUser(congregation.Id, "Administrador", adminEmail, hashedPassword, "active")
 	return err
 }

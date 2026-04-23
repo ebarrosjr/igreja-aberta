@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
 )
 
 type RefreshToken struct {
@@ -92,6 +94,149 @@ func GenerateJWT(user *User, expiresAt time.Time) (string, error) {
 	return token.SignedString([]byte(key))
 }
 
+func ValidateJWT(tokenString string) (jwt.MapClaims, error) {
+	key, err := getJWTKey()
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(key), nil
+	}, jwt.WithIssuer(getJWTIssuer()), jwt.WithAudience(getJWTAudience()))
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims, nil
+}
+
+func GetUserIDFromClaims(claims jwt.MapClaims) (uint, error) {
+	subject, ok := claims["sub"].(string)
+	if !ok || strings.TrimSpace(subject) == "" {
+		return 0, fmt.Errorf("invalid token subject")
+	}
+
+	id, err := strconv.ParseUint(subject, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint(id), nil
+}
+
+func CreateRefreshToken(userID int, refreshToken string, expiresAt time.Time) error {
+	token := &RefreshToken{
+		UserID:    userID,
+		TokenHash: HashToken(refreshToken),
+		ExpiresAt: expiresAt,
+		CreatedAt: time.Now().UTC(),
+	}
+
+	return DB.Create(token).Error
+}
+
+func GetValidRefreshToken(refreshToken string) (*RefreshToken, error) {
+	var token RefreshToken
+	now := time.Now().UTC()
+
+	result := DB.Where("token_hash = ? AND revoked_at IS NULL AND expires_at > ?", HashToken(refreshToken), now).First(&token)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &token, nil
+}
+
+func GetValidRefreshTokenByUserID(refreshToken string, userID int) (*RefreshToken, error) {
+	var token RefreshToken
+	now := time.Now().UTC()
+
+	result := DB.Where("token_hash = ? AND user_id = ? AND revoked_at IS NULL AND expires_at > ?", HashToken(refreshToken), userID, now).First(&token)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &token, nil
+}
+
+func RevokeRefreshToken(token *RefreshToken) error {
+	now := time.Now().UTC()
+	token.RevokedAt = &now
+	return DB.Save(token).Error
+}
+
+func RevokeRefreshTokenByRawToken(refreshToken string) error {
+	token, err := GetValidRefreshToken(refreshToken)
+	if err != nil || token == nil {
+		return err
+	}
+
+	return RevokeRefreshToken(token)
+}
+
+func RevokeAllUserRefreshTokens(userID int) error {
+	now := time.Now().UTC()
+	return DB.Model(&RefreshToken{}).
+		Where("user_id = ? AND revoked_at IS NULL", userID).
+		Update("revoked_at", now).Error
+}
+
+func CreatePasswordResetToken(userID int) (string, *PasswordResetToken, error) {
+	resetToken, err := GenerateOpaqueToken()
+	if err != nil {
+		return "", nil, err
+	}
+
+	record := &PasswordResetToken{
+		UserID:    userID,
+		TokenHash: HashToken(resetToken),
+		ExpiresAt: time.Now().UTC().Add(time.Duration(getPasswordResetTokenMinutes()) * time.Minute),
+		CreatedAt: time.Now().UTC(),
+	}
+
+	if err := DB.Create(record).Error; err != nil {
+		return "", nil, err
+	}
+
+	return resetToken, record, nil
+}
+
+func GetValidPasswordResetToken(resetToken string) (*PasswordResetToken, error) {
+	var token PasswordResetToken
+	now := time.Now().UTC()
+
+	result := DB.Where("token_hash = ? AND used_at IS NULL AND expires_at > ?", HashToken(resetToken), now).First(&token)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &token, nil
+}
+
+func MarkPasswordResetTokenAsUsed(token *PasswordResetToken) error {
+	now := time.Now().UTC()
+	token.UsedAt = &now
+	return DB.Save(token).Error
+}
+
 func getJWTKey() (string, error) {
 	key := os.Getenv("JWT_KEY")
 	if key == "" {
@@ -141,4 +286,14 @@ func getRefreshTokenDays() int {
 	}
 
 	return days
+}
+
+func getPasswordResetTokenMinutes() int {
+	value := os.Getenv("PASSWORD_RESET_TOKEN_MINUTES")
+	minutes, err := strconv.Atoi(value)
+	if err != nil || minutes <= 0 {
+		return 30
+	}
+
+	return minutes
 }

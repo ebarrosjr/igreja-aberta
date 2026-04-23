@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -19,20 +20,35 @@ type User struct {
 	UpdatedAt      time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
+const (
+	UserStatusActive   = "active"
+	UserStatusInactive = "inactive"
+)
+
 func MigrateUsers() {
 	DB.AutoMigrate(&User{})
 }
 
-func CreateUser(congregationId int, name, email, password string) (*User, error) {
+func CreateUser(congregationId int, name, email, password, status string) (*User, error) {
+	if status == "" {
+		status = UserStatusActive
+	}
+
 	user := &User{
 		CongregationId: congregationId,
-		Name:           name,
-		Email:          email,
+		Name:           strings.TrimSpace(name),
+		Email:          strings.ToLower(strings.TrimSpace(email)),
 		Password:       password,
-		Status:         "active",
+		Status:         NormalizeUserStatus(status),
 	}
 	result := DB.Create(user)
 	return user, result.Error
+}
+
+func ListUsers() ([]User, error) {
+	var users []User
+	result := DB.Order("id asc").Find(&users)
+	return users, result.Error
 }
 
 func GetUserByEmail(email string) (*User, error) {
@@ -58,4 +74,35 @@ func UserExistsByEmail(email string) (bool, error) {
 	var count int64
 	result := DB.Model(&User{}).Where("email = ?", email).Count(&count)
 	return count > 0, result.Error
+}
+
+func UserExistsByEmailExceptID(email string, id uint) (bool, error) {
+	var count int64
+	result := DB.Model(&User{}).Where("email = ? AND id <> ?", strings.ToLower(strings.TrimSpace(email)), id).Count(&count)
+	return count > 0, result.Error
+}
+
+func UpdateUser(user *User) error {
+	return DB.Save(user).Error
+}
+
+func DeleteUser(user *User) error {
+	return DB.Delete(user).Error
+}
+
+func NormalizeUserStatus(status string) string {
+	return strings.ToLower(strings.TrimSpace(status))
+}
+
+func IsValidUserStatus(status string) bool {
+	switch NormalizeUserStatus(status) {
+	case UserStatusActive, UserStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsActiveStatus(status string) bool {
+	return NormalizeUserStatus(status) == UserStatusActive
 }
